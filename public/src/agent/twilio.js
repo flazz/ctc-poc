@@ -75,8 +75,22 @@ function getActivities(worker) {
     });
 }
 
+function getTaskQueues(workspace) {
+    return new Promise((resolve, reject) => { 
+        workspace.taskqueues.fetch((error, taskQueueList) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                resolve(taskQueueList.data);
+            }
+        );
+    });
+}
+
 export {
     setupDevice,
     setupWorker,
     getActivities,
+    getTaskQueues,
 }

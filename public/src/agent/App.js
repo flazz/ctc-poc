@@ -153,6 +153,11 @@ class App extends React.Component {
 
                     return st;
                 });
+
+                return twilio.getTaskQueues(this.state.workWorker.workspace);
+            })
+            .then(taskQueues => {
+                this.setState({ workTaskQueues: taskQueues });
             })
             .catch((error) => {
                 console.log(error);
