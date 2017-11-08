@@ -141,6 +141,8 @@ module.exports = (app) => {
     // https://www.twilio.com/docs/api/taskrouter/handling-assignment-callbacks
     // This must respond within 5 seconds or it will move the Fallback URL.
     app.post('/assignment_callbacks', twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
+        // TODO detect click to call assignment | cold transfer assignment
+
         const whRouter = new WebhookRouter(`https://${request.headers.host}`, WEBHOOK_SPEC);
         const workspaceSid = request.body.WorkspaceSid;
         const taskSid = request.body.TaskSid;
@@ -242,6 +244,19 @@ module.exports = (app) => {
         new service.RetrieveCustomer(callControl, CallLeg)
             .do(conferenceName)
             .then((resp) => { response.status(200).send(resp); })
+            .catch((err) => {
+                console.log(`ERROR ${request.route.path}`, err);
+                response.status(500).send(err);
+            });
+    });
+
+    app.post('/cold-transfer', twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
+        const { conferenceSid } = request.body;
+        new service.ColdTransfer(callControl, CallLeg)
+            .do(conferenceSid)
+            .then((_resp) => {
+                response.status(200).send('OK');
+            })
             .catch((err) => {
                 console.log(`ERROR ${request.route.path}`, err);
                 response.status(500).send(err);

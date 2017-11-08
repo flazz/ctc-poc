@@ -116,6 +116,25 @@ class RetrieveCustomer {
     }
 }
 
+class ColdTransfer {
+    constructor(callControl, CallLeg) {
+        this.callControl = callControl;
+        this.CallLeg = CallLeg;
+    }
+
+    async do(conferenceSid, skills) {
+        const realConfSid = await this.callControl.conferenceSidByFriendlyName(conferenceSid); // TODO can this be done once?
+        const customerLeg = await this.CallLeg.findCustomerLeg(conferenceSid);
+        const { callSid } = customerLeg.toObject();
+        const holdResp = await this.callControl.holdConfParticipant(realConfSid, callSid);
+        // TODO make new task with skills & taskSid and conferenceSid
+        // TODO remove agent from conference
+        // TODO complete task
+        return;
+    }
+}
+
+
 class ConsumeWorkspaceEvent {
     // For a full list of what will be posted, please refer to the following
     // url: https://www.twilio.com/docs/api/taskrouter/events#event-callbacks
@@ -166,6 +185,7 @@ module.exports = {
     CustomerAnswers,
     HoldCustomer,
     RetrieveCustomer,
+    ColdTransfer,
     ConsumeWorkspaceEvent,
     ConsumeVoiceEvent,
 };
