@@ -91,10 +91,22 @@ function retrieveCustomer(conferenceName) {
     });
 }
 
+function coldTransfer(conferenceSid, skills) {
+    return fetch('/cold-transfer', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ conferenceSid, skills }),
+    });
+}
+
 export {
     setupDevice,
     setupWorker,
     getActivities,
     holdCustomer,
     retrieveCustomer,
+    coldTransfer,
 };

@@ -225,6 +225,10 @@ class App extends React.Component {
         twilio.holdCustomer(this.state.workTask.sid);
     }
 
+    coldTransfer(skills) {
+        twilio.coldTransfer(this.state.workTask.sid, skills);
+    }
+
     // work callbacks
     connected() {
         this.log.info('Twilio.TaskRouter.Worker Websocket has connected');
@@ -312,7 +316,8 @@ class App extends React.Component {
                             state={this.state.softphoneState}
                             from={this.state.softphoneFrom}
                             clear={this.clear}
-                            holdCustomer={this.holdCustomer} />
+                            holdCustomer={this.holdCustomer}
+                            coldTransfer={this.coldTransfer} />
 
                         <br />
 
