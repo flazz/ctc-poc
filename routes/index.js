@@ -292,9 +292,10 @@ module.exports = (app) => {
     });
 
     app.post('/cold-transfer', twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
-        const { conferenceSid } = request.body;
+        console.log('COLD TRANSFER', request.body);
+        const { conferenceSid, desiredSkills } = request.body;
         new service.ColdTransfer(callControl, CallLeg)
-            .do(conferenceSid)
+            .do(config.workspaceSid, config.coldTransferWorkflowSid, conferenceSid, desiredSkills)
             .then((_resp) => {
                 response.status(200).send('OK');
             })
