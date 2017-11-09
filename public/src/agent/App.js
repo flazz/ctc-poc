@@ -226,6 +226,7 @@ class App extends React.Component {
     }
 
     coldTransfer(skills) {
+        this.log.info(`COLD TRANSFER ${this.state.workTask}`);
         twilio.coldTransfer(this.state.workTask.sid, skills);
     }
 
