@@ -158,8 +158,9 @@ class RetrieveCustomer {
 }
 
 class ColdTransfer {
-    constructor(callControl, CallLeg) {
+    constructor(callControl, workRouting, CallLeg) {
         this.callControl = callControl;
+        this.workRouting = workRouting;
         this.CallLeg = CallLeg;
     }
 
