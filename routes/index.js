@@ -209,6 +209,7 @@ module.exports = (app) => {
         const workspaceSid = request.query.WorkspaceSid;
         const taskSid = request.query.TaskSid;
         const agentCallSid = request.body.CallSid;
+        console.log('AGENT ANSWER COLD TRANSFER', request.body);
         new service.AgentAnswersColdTransfer(callControl, workRouting, CallLeg, config.twilioNumber)
             .do(
                 taskSid,
