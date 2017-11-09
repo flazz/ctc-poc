@@ -122,11 +122,11 @@ class ColdTransfer {
         this.CallLeg = CallLeg;
     }
 
-    async do(conferenceSid, skills) {
-        const realConfSid = await this.callControl.conferenceSidByFriendlyName(conferenceSid); // TODO can this be done once?
-        const customerLeg = await this.CallLeg.findCustomerLeg(conferenceSid);
+    async do(conferenceName, skills) {
+        const conferenceSid = await this.callControl.conferenceSidByFriendlyName(conferenceName); // TODO can this be done once?
+        const customerLeg = await this.CallLeg.findCustomerLeg(conferenceName);
         const { callSid } = customerLeg.toObject();
-        const holdResp = await this.callControl.holdConfParticipant(realConfSid, callSid);
+        const holdResp = await this.callControl.holdConfParticipant(conferenceSid, callSid);
         // TODO make new task with skills & taskSid and conferenceSid
         // TODO remove agent from conference
         // TODO complete task
