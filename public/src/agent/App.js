@@ -74,6 +74,7 @@ class App extends React.Component {
 
         this.clear = this.clear.bind(this);
         this.holdCustomer = this.holdCustomer.bind(this);
+        this.coldTransfer = this.coldTransfer.bind(this);
 
         // worker actions
         this.connected = this.connected.bind(this);
