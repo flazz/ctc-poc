@@ -18,12 +18,11 @@ class ColdTransfer extends React.Component {
         e.preventDefault();
         const noPunct = this.state.buffer.replace(/\W/g, ' ');
         const uniformWs = noPunct.replace(/\s+/g, ' ');
-        const skills = uniformWs.split(' ')
+        const skills = uniformWs.split(' ');
         this.props.transfer(skills);
     }
 
     handleChange(event) {
-        const val = event.target.value;
         this.setState({ buffer: event.target.value });
     }
 
@@ -31,8 +30,10 @@ class ColdTransfer extends React.Component {
         return (
             <form onSubmit={this.handleSubmit}>
                 <div className="form-group">
-                    <label className="col-form-label" htmlFor="skills">Skills required for next hop</label>
-                    <textarea id="skills" className="form-control" rows="3" value={this.state.value} onChange={this.handleChange} />
+                    <label className="col-form-label">
+                        Skills required for next hop
+                        <textarea className="form-control" rows="3" value={this.state.value} onChange={this.handleChange} />
+                    </label>
                 </div>
                 <div className="form-group">
                     <input className="btn btn-danger" type="submit" value="Cold Transfer" />
@@ -55,11 +56,7 @@ function SoftPhone(props) {
 
     switch (props.state) {
     case state.Call.OFFLINE:
-        return (
-            <Card title="Soft Phone" subtitle="offline">
-                <ColdTransfer transfer={this.props.coldTransfer} />
-            </Card>
-        );
+        return <Card title="Soft Phone" subtitle="offline" />;
 
     case state.Call.CLEAR:
         return <Card title="Soft Phone" subtitle="clear" />;
@@ -70,19 +67,22 @@ function SoftPhone(props) {
     case state.Call.ESTABLISHED:
         return (
             <Card title="Soft Phone" subtitle="established">
-                <p className="card-text">responding to call request</p>
-                <button className="btn btn-danger" onClick={handleClearClick}>
-                    Clear
-                </button>
+                <div className="card-body">
+                    <p className="card-text">responding to call request</p>
+                    <button className="btn btn-danger" onClick={handleClearClick}>
+                        Clear
+                    </button>
+                </div>
 
-                <br />
+                <div className="card-body">
+                    <button className="btn btn-danger" onClick={handleHoldCustomerClick}>
+                        Hold Customer
+                    </button>
+                </div>
 
-                <button className="btn btn-danger" onClick={handleHoldCustomerClick}>
-                    Hold Customer
-                </button>
-
-                <br />
-
+                <div className="card-body">
+                    <ColdTransfer transfer={props.coldTransfer} />
+                </div>
             </Card>
         );
 

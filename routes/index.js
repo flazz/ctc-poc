@@ -44,6 +44,11 @@ const WEBHOOK_SPEC = {
         params: ['WorkspaceSid', 'TaskSid'],
     },
 
+    agentAnswersColdTransfer: {
+        path: '/callbacks/cold-transfer-agent-answers',
+        params: ['WorkspaceSid', 'TaskSid'],
+    },
+
     agentComplete: {
         path: '/callbacks/ctc-agent-complete',
         params: ['WorkspaceSid', 'TaskSid'],
@@ -160,6 +165,24 @@ module.exports = (app) => {
             });
     });
 
+    app.post('/assignment_callbacks/cold-transfer', twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
+        const whRouter = new WebhookRouter(`https://${request.headers.host}`, WEBHOOK_SPEC);
+        const workspaceSid = request.body.WorkspaceSid;
+        const taskSid = request.body.TaskSid;
+        const agentAnswerColdTransferURL = whRouter.webhook('agentAnswersColdTransfer', { WorkspaceSid: workspaceSid, TaskSid: taskSid });
+        const agentCompleteURL = whRouter.webhook('agentComplete', { WorkspaceSid: workspaceSid, TaskSid: taskSid });
+
+        new service.AgentAssignedColdTransfer(callControl)
+            .do(agentAnswerColdTransferURL, agentCompleteURL)
+            .then((instruction) => {
+                response.status(200).send(instruction);
+            })
+            .catch((error) => {
+                console.log(`ERROR ${request.route.path}`, error);
+                response.status(500).send(error);
+            });
+    });
+
     // WHEN AGENT ANSWERS CALL
     // whisper to agent; join conference for task; call customer
     app.post(WEBHOOK_SPEC.agentAnswers.path, twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
@@ -173,6 +196,23 @@ module.exports = (app) => {
                 agentCallSid,
                 workspaceSid,
                 whRouter.webhook('customerAnswers', { TaskSid: taskSid }),
+            )
+            .then((twimlResponse) => { response.send(twimlResponse.toString()); })
+            .catch((error) => {
+                console.log(`ERROR ${request.route.path}`, error);
+                response.status(500).send(error);
+            });
+    });
+
+    app.post(WEBHOOK_SPEC.agentAnswersColdTransfer.path, twilio.webhook({ validate: config.shouldValidate }), (request, response) => {
+        const whRouter = new WebhookRouter(`https://${request.headers.host}`, WEBHOOK_SPEC);
+        const workspaceSid = request.query.WorkspaceSid;
+        const taskSid = request.query.TaskSid;
+        const agentCallSid = request.body.CallSid;
+        new service.AgentAnswersColdTransfer(callControl, workRouting, CallLeg, config.twilioNumber)
+            .do(
+                taskSid,
+                agentCallSid,
             )
             .then((twimlResponse) => { response.send(twimlResponse.toString()); })
             .catch((error) => {

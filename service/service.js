@@ -30,6 +30,24 @@ class AgentAssigned {
     }
 }
 
+class AgentAssignedColdTransfer {
+    constructor(callControl) {
+        this.callControl = callControl;
+    }
+
+    async do(agentAnswersURL, agentCompleteURL) {
+        return {
+            accept: true,
+            from: this.callControl.twilioNumber,
+            instruction: 'call',
+            record: 'record-from-answer',
+            timeout: 10,
+            url: agentAnswersURL,
+            status_callback_url: agentCompleteURL,
+        };
+    }
+}
+
 class AgentAnswers {
     constructor(callControl, workRouting, CallLeg, twilioNumber) {
         this.callControl = callControl;
@@ -51,6 +69,29 @@ class AgentAnswers {
         const twimlResponse = new twilio.twiml.VoiceResponse();
         twimlResponse.say('Click-To-Call requested. Please hold for customer connection.', { voice: 'man' });
         twimlResponse.say('Hi agent, This call may be monitored or recorded for quality and training purposes.');
+        const dial = twimlResponse.dial({
+            callerId: this.twilioNumber,
+            record: 'record-from-answer-dual',
+        });
+        dial.conference(taskSid);
+        return twimlResponse;
+    }
+}
+
+class AgentAnswersColdTransfer {
+    constructor(callControl, workRouting, CallLeg, twilioNumber) {
+        this.callControl = callControl;
+        this.workRouting = workRouting;
+        this.CallLeg = CallLeg;
+        this.twilioNumber = twilioNumber;
+    }
+
+    async do(taskSid, agentCallSid) {
+        await this.CallLeg.createAgentLeg(taskSid, agentCallSid);
+
+        const twimlResponse = new twilio.twiml.VoiceResponse();
+        twimlResponse.say('Cold Transfer requested. Please hold for customer connection.', { voice: 'man' });
+        twimlResponse.say('This call may be monitored or recorded for quality and training purposes.');
         const dial = twimlResponse.dial({
             callerId: this.twilioNumber,
             record: 'record-from-answer-dual',
@@ -122,12 +163,17 @@ class ColdTransfer {
         this.CallLeg = CallLeg;
     }
 
-    async do(conferenceName, skills) {
+    async do(workspaceSid, workflowSid, conferenceName, skills) {
         const conferenceSid = await this.callControl.conferenceSidByFriendlyName(conferenceName); // TODO can this be done once?
         const customerLeg = await this.CallLeg.findCustomerLeg(conferenceName);
         const { callSid } = customerLeg.toObject();
-        const holdResp = await this.callControl.holdConfParticipant(conferenceSid, callSid);
-        // TODO make new task with skills & taskSid and conferenceSid
+
+        // put caller on hold
+        await this.callControl.holdConfParticipant(conferenceSid, callSid);
+
+        // make new task to find new agent
+        await this.workRouting.createTask(workspaceSid, workflowSid, { conferenceName, desiredsSkills: skills });
+
         // TODO remove agent from conference
         // TODO complete task
         return;
@@ -180,7 +226,9 @@ class ConsumeVoiceEvent {
 module.exports = {
     CallbackRequested,
     AgentAssigned,
+    AgentAssignedColdTransfer,
     AgentAnswers,
+    AgentAnswersColdTransfer,
     AgentComplete,
     CustomerAnswers,
     HoldCustomer,
